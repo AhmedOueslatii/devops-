@@ -69,6 +69,34 @@ def main():
             team_ball_control.append(team_ball_control[-1])
     team_ball_control= np.array(team_ball_control)
 
+team_control_time = {team_assigner.team_colors[0]: 0, team_assigner.team_colors[1]: 0}
+
+# Comptabiliser le temps de contrôle du ballon pour chaque équipe
+for frame_num, team in enumerate(team_ball_control):
+    if team == team_assigner.team_colors[0]:
+        team_control_time[team_assigner.team_colors[0]] += 1
+    elif team == team_assigner.team_colors[1]:
+        team_control_time[team_assigner.team_colors[1]] += 1
+
+# Dessiner les boîtes englobantes des joueurs et afficher l'équipe en contrôle du ballon
+for frame_num, frame in enumerate(video_frames):
+    for player_id, track in tracks['players'][frame_num].items():
+        bbox = track['bbox']
+        team_color = track['team_color']
+        has_ball = track.get('has_ball', False)
+        
+        # Dessiner la boîte englobante du joueur
+        cv2.rectangle(frame, (bbox[0], bbox[1]), (bbox[2], bbox[3]), team_color, 2)
+        
+        # Si le joueur a le ballon, ajouter un indicateur
+        if has_ball:
+            cv2.putText(frame, 'Has Ball', (bbox[0], bbox[1] - 10), cv2.FONT_HERSHEY_SIMPLEX, 0.5, team_color, 2)
+    
+    # Afficher l'équipe qui contrôle le ballon
+    cv2.putText(frame, f'Team Control: {team_ball_control[frame_num]}', (50, 50), cv2.FONT_HERSHEY_SIMPLEX, 1, (0, 255, 0), 2)
+
+# Sauvegarder la vidéo avec les annotations
+save_video('output_videos/annotated_soccer.mp4', video_frames)
 
   
 
